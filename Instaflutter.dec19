@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Insta Flutter',
+      theme: ThemeData(  // Add the 3 lines from here...
+        primaryColor: Colors.cyan,
+      ),
+      home: RandomImages(),
+    );
+  }
+}
+
+//class MyApp extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    return MaterialApp(
+     
+//      title: 'Welcome to Flutter',
+//      home: Scaffold(
+//        appBar: AppBar(
+//          title: Text('Welcome to Flutter'),
+//        ),
+//        body: RandomImages(), // ... to this line.
+//      ),
+//    );
+//  }
+//}
+
+class RandomImagesState extends State<RandomImages> {
+   final Set<String> _saved = Set<String>(); 
+   final List<String> _urls = <String>[];
+ 
+ @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Insta Flutter'),
+        actions: <Widget>[      // Add 3 lines from here...
+          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
+        ],                      // ... to here.
+      ),
+      body: _buildImages(),
+    );
+  } 
+  
+//   @override
+//  Widget build(BuildContext context) {
+ //   return Scaffold(                                                    // Add these 6 lines
+ //       appBar: AppBar(                                                 // ...
+ //         title: const Text('Insta Flutter'),                           // ...
+//        ),                                                              // ...
+//        body: _buildImages(),                                           // ...
+//      );                                                                // ...
+//  }
+ 
+  
+  Widget _buildImages() { 
+    return ListView.builder(
+        padding: const EdgeInsets.all(8),
+   
+        itemBuilder: (BuildContext _context, int i) {
+          if (i.isOdd) {
+            return Divider();
+          }
+
+          final int index = i ~/ 2;
+        
+          if (index >= _urls.length) {
+           
+            _urls.addAll(List.generate(
+                10, (number) => 'https://picsum.photos/seed/${_urls.length + number + 1}/250/250'));
+          }
+          return _buildRow(_urls[index]);
+        });
+  }
+
+Widget _buildRow(String url) {
+    final bool alreadySaved = _saved.contains(url);
+
+    return ListTile(
+      title: Image.network(url, height: 250),
+      trailing: Icon(     // Add the lines from here...
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),                  // ... to here.
+      onTap: () { // Add 9 lines from here...
+        setState(() {
+          if (alreadySaved) {
+            _saved.remove(url);
+          } else {
+            _saved.add(url);
+          }
+        });
+      },   
+    );
+  }
+ 
+  void _pushSaved() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          final Iterable<ListTile> tiles = _saved.map(
+            (String url) {
+              return ListTile(
+                title: Image.network(url, height: 250),
+              );
+            },
+          );
+          final List<Widget> divided = ListTile.divideTiles(
+            context: context,
+            tiles: tiles,
+          ).toList();
+
+          return Scaffold(     // Add 6 lines from here...
+            appBar: AppBar(
+              title: Text('Saved Images'),
+            ),
+            body: ListView(children: divided),
+          );                   // ... to here.
+        },
+      ),
+    );
+  }
+
+}
+
+ 
+class RandomImages extends StatefulWidget {
+  @override
+  RandomImagesState createState() => RandomImagesState();
+}
+ 
